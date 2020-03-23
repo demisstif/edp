@@ -1,4 +1,4 @@
-mod hbdm;
+pub mod hbdm;
 
 #[cfg(test)]
 mod tests {
