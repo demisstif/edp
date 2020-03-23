@@ -1,3 +1,5 @@
+mod hbdm;
+
 #[cfg(test)]
 mod tests {
     #[test]
