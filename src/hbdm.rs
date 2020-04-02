@@ -43,7 +43,7 @@ pub struct Kline {
     // transaction volume(currency), sum(every transaction volume(amount)*every contract value/transaction price for this contract)
     // 成交量(币), 即 sum(每一笔成交量(张)*单张合约面值/该笔成交价)
     pub amount: f64, 
-    pub count: u64,
+    pub count: u64
 
 }
 
@@ -85,7 +85,7 @@ impl Hbdm {
 mod tests {
     use super::*;
     #[test]
-    fn test_get_kline() {
+    fn test_get_hbdm_kline() {
         let hbdm = Hbdm::new();
         let from = "2020-03-22T08:00:00Z".parse::<DateTime<Utc>>().unwrap().timestamp() as u64;
         let to = "2020-03-23T07:00:00Z".parse::<DateTime<Utc>>().unwrap().timestamp() as u64;
