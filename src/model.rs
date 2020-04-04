@@ -9,8 +9,10 @@ pub struct KData {
     pub high: f64,
     pub low: f64,
     pub close: f64,
-    pub base_vol: f64,
-    pub quote_vol: f64
+    // base
+    pub vol: f64,
+    //quote
+    pub turnover: f64
 }
 
 // open high low close

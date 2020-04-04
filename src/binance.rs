@@ -54,8 +54,8 @@ impl Binance {
                 high: to_f64(&one_k[2]),
                 low: to_f64(&one_k[3]),
                 close: to_f64(&one_k[4]),
-                base_vol: to_f64(&one_k[5]),
-                quote_vol: to_f64(&one_k[7]),
+                vol: to_f64(&one_k[5]),
+                turnover: to_f64(&one_k[7]),
             };
             vec_data.push(kdata);
         }
