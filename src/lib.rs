@@ -1,10 +1,7 @@
-pub mod hbdm;
-pub mod exchange;
-pub mod model;
-pub mod error;
-pub mod client;
-pub mod binance;
 pub mod utils;
+pub mod rest;
+pub mod ws;
+pub mod error;
 
 #[cfg(test)]
 mod tests {
