@@ -2,6 +2,8 @@ pub mod utils;
 pub mod rest;
 pub mod ws;
 pub mod error;
+pub mod model;
+
 
 #[cfg(test)]
 mod tests {
