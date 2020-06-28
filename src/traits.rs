@@ -1,4 +1,7 @@
+use crate::model::{OrderResp, Ticker, OrderBook};
+use anyhow::Result;
 use async_trait::async_trait;
+
 
 #[async_trait]
 pub trait ExchangeAPI {
@@ -12,11 +15,19 @@ pub trait ExchangeAPI {
         time_in_force: &str,
         recv_window: u64,
         new_client_order_id: Option<&str>,
-    );
-    async fn cancel_order();
-    async fn query_order();
-    async fn get_ticker();
-    async fn get_order_book();
+        timestamp: Option<u64>,
+    ) -> Result<OrderResp>;
+
+    async fn cancel_order(
+        &self,
+        symbol: &str,
+        order_id: Option<u64>,
+        client_order_id: Option<&str>,
+    ) -> anyhow::Result<OrderResp>;
+
+    async fn query_order(&self, symbol: &str, order_id: Option<u64>, client_order_id: Option<&str>) -> anyhow::Result<OrderResp>;
+    async fn get_ticker(&self, symbol: &str) -> anyhow::Result<Ticker>;
+    async fn get_order_book(&self, symbol: &str, limit: Option<u64>) -> anyhow::Result<OrderBook>;
     async fn get_klines();
 }
 

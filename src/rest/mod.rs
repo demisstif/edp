@@ -1,4 +1,4 @@
-use crate::model::{KData, Balance, NewOrderResult, OpenInterest, SymbolInfo, Ticker, CancelOrderResult, QueryOrderResult};
+use crate::model::{KData, Balance, OrderResp, OpenInterest, SymbolInfo, Ticker, CancelOrderResult, QueryOrderResult};
 use anyhow::Result;
 use async_trait::async_trait;
 use serde::de::DeserializeOwned;
@@ -40,7 +40,7 @@ pub trait PrivateAPI {
         price: f64,
         type_: &str,
         side: &str,
-    ) -> Result<NewOrderResult>;
+    ) -> Result<OrderResp>;
     async fn cancel_order(&self, symbol: &str, order_id: u32) -> Result<CancelOrderResult>;
     async fn query_order(&self, symbol: &str, order_id: u32) -> Result<QueryOrderResult>;
     // user balance

@@ -5,7 +5,7 @@ use crate::model::{
     KData, 
     SymbolInfo, 
     Ticker,
-    NewOrderResult,
+    OrderResp,
     QueryOrderResult,
     CancelOrderResult,
     Balance
@@ -106,7 +106,7 @@ impl<'a> PublicAPI for BinanceSpot<'a> {
 
 #[async_trait]
 impl<'a> PrivateAPI for BinanceSpot<'a> {
-    async fn new_order(&self, symbol: &str, qty: f64, price: f64, type_: &str, side: &str) -> Result<NewOrderResult> {
+    async fn new_order(&self, symbol: &str, qty: f64, price: f64, type_: &str, side: &str) -> Result<OrderResp> {
         let end_point = "/api/v3/order";
         
         unimplemented!()

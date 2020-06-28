@@ -59,10 +59,9 @@ pub struct Balance {
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NewOrderResult {
+pub struct OrderResp {
     pub symbol: String,
-    pub order_id: i64,
-    pub order_list_id: i64,
+    pub order_id: u64,
     pub client_order_id: String,
     pub transact_time: i64,
 }
@@ -109,6 +108,36 @@ pub struct QueryOrderResult {
     pub is_working: bool,
     pub orig_quote_order_qty: String,
 }
+
+#[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrderBook {
+    pub last_update_id: i64,
+    #[serde(rename = "E")]
+    pub event_time: i64,
+    #[serde(rename = "T")]
+    pub trade_order_time: i64,
+    pub bids: Vec<Bids>,
+    pub asks: Vec<Asks>,
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Bids {
+    #[serde(with="string_or_float")]
+    pub price: f64,
+    #[serde(with="string_or_float")]
+    pub qty: f64,
+}
+#[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Asks{
+    #[serde(with="string_or_float")]
+    pub price: f64,
+    #[serde(with="string_or_float")]
+    pub qty: f64,
+}
+
 
 
 mod string_or_float {
