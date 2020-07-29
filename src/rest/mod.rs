@@ -1,12 +1,8 @@
 use crate::model::{KData, Balance, OrderResp, OpenInterest, SymbolInfo, Ticker, CancelOrderResult, QueryOrderResult};
 use anyhow::Result;
 use async_trait::async_trait;
-use serde::de::DeserializeOwned;
-use serde::Serialize;
-use std::collections::HashMap;
 
-pub mod binance_futures;
-pub mod binance_spot;
+pub mod rclient;
 
 #[async_trait]
 pub trait PublicAPI {

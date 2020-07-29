@@ -8,7 +8,7 @@ pub fn to_f64(v: &Value) -> f64 {
     v.as_str().unwrap().parse().unwrap()
 }
 
-pub mod string2float {
+pub mod de2float {
     use std::fmt;
 
     use serde::{de, Serializer, Deserialize, Deserializer};

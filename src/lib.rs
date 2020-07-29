@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 pub mod utils;
 pub mod rest;
 pub mod ws;
