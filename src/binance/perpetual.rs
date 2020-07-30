@@ -1,40 +1,38 @@
 use crate::model::{OrderBook, OrderResp, Ticker};
 use crate::rest::rclient::RestClient;
+use crate::ws::wclient::WssClient;
 use crate::traits::{ExchangeAPI, PerpetualAPI};
 use crate::utils::de2float;
 use async_trait::async_trait;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
+use std::process;
+use crate::indicator::{Indicator, EdpOrderBook, KlineBucket};
+use std::collections::HashMap;
 
 // 响应中如有数组，数组元素以时间升序排列，越早的数据越提前。
 // 所有时间、时间戳均为UNIX时间，单位为毫秒
-const REST_BASE_URL: &'static str = "https://fapi.binance.com";
-const WS_BASE_URL: &'static str = "wss://fstream.binance.com";
+
 
 pub struct BinancePerpetual {
     rest_client: RestClient,
-    // wss_client: String,
+    wss_client: WssClient,
+    order_book: EdpOrderBook,
+    kline_bucket: KlineBucket,
 }
 
 impl BinancePerpetual {
-    pub fn new(base_url: Option<String>) -> Self {
-        let client = match base_url {
-            Some(bu) => RestClient::new(bu),
-            None => RestClient::new(REST_BASE_URL.to_string()),
-        };
+    pub fn with_key(base_url_rest: String, base_url_ws: String,  keys: (String, String)) -> Self {
+        let rest_client = RestClient::with_key(base_url_rest, keys.clone());
+        let wss_client = WssClient::with_key(base_url_ws, keys);
+        let order_book = EdpOrderBook {};
+        let kline_bucket = KlineBucket {};
         Self {
-            rest_client: client,
-        }
-    }
-
-    pub fn with_key(base_url: Option<String>, keys: (String, String)) -> Self {
-        let client = match base_url {
-            Some(bu) => RestClient::with_key(bu, keys),
-            None => RestClient::with_key(REST_BASE_URL.to_string(), keys),
-        };
-        Self {
-            rest_client: client,
+            rest_client,
+            wss_client,
+            order_book,
+            kline_bucket
         }
     }
 }
@@ -232,6 +230,17 @@ mod test {
     use dotenv::dotenv;
     use std::env;
 
+    const REST_BASE_URL: &'static str = "https://fapi.binance.com";
+    const WS_BASE_URL: &'static str = "wss://fstream.binance.com";
+
+    fn get_client() -> BinancePerpetual {
+        dotenv().ok();
+        let api_key = env::var("API_KEY").unwrap();
+        let sec_key = env::var("SEC_KEY").unwrap();
+        let bp = BinancePerpetual::with_key(REST_BASE_URL.to_string(), WS_BASE_URL.to_string(), (api_key, sec_key));
+        bp
+    }
+
     #[tokio::main]
     #[test]
     async fn test_order() {
@@ -249,7 +258,7 @@ mod test {
         let secret_key = "2b5eb11e18796d12d88f13dc27dbbd02c2cc51ff7059765ed9821957d82bb4d9";
         let api_key = "dbefbc809e3e83c283a984c3a1459732ea7db1360ca80c5c2c8867408d28cc83";
         let target_signature = "3c661234138461fcc7a7d8746c6558c9842d4e10870d2ecbedf7777cad694af9";
-        let bp = BinancePerpetual::with_key(None, (api_key.to_string(), secret_key.to_string()));
+        let bp = BinancePerpetual::with_key(REST_BASE_URL.to_string(), WS_BASE_URL.to_string(), (api_key.to_string(), secret_key.to_string()));
 
         //https://fapi.binance.com/fapi/v1/order?symbol=BTCUSDT&side=BUY&type=LIMIT&quantity=1&price=9000&timeInForce=GTC&recvWindow=5000&timestamp=1591702613943&signature=3c661234138461fcc7a7d8746c6558c9842d4e10870d2ecbedf7777cad694af9
         //https://fapi.binance.com/fapi/v1/order?symbol=BTCUSDT&side=BUY&type=LIMIT&quantity=1&price=9000&timeInForce=GTC&recvWindow=5000&timestamp=1591702613943&signature=3c661234138461fcc7a7d8746c6558c9842d4e10870d2ecbedf7777cad694af9
@@ -272,16 +281,13 @@ mod test {
     #[tokio::main]
     #[test]
     async fn test_send_order() {
-        dotenv().ok();
-        let api_key = env::var("API_KEY").unwrap();
-        let sec_key = env::var("SEC_KEY").unwrap();
-        let bp = BinancePerpetual::with_key(None, (api_key, sec_key));
+        let bp = get_client();
         let order_status = bp
             .order(
                 "ETHUSDT",
                 "BUY",
                 "LIMIT",
-                3.1,
+                1.1,
                 Some(210.1),
                 "GTC",
                 5000,
@@ -302,10 +308,7 @@ mod test {
     #[tokio::main]
     #[test]
     async fn test_cancel_order() {
-        dotenv().ok();
-        let api_key = env::var("API_KEY").unwrap();
-        let sec_key = env::var("SEC_KEY").unwrap();
-        let bp = BinancePerpetual::with_key(None, (api_key, sec_key));
+        let bp = get_client();
         let order_status = bp.cancel_order("ETHUSDT", Some(2163768930), None).await;
         match order_status {
             Ok(os) => {
@@ -320,10 +323,7 @@ mod test {
     #[tokio::main]
     #[test]
     async fn test_query_order() {
-        dotenv().ok();
-        let api_key = env::var("API_KEY").unwrap();
-        let sec_key = env::var("SEC_KEY").unwrap();
-        let bp = BinancePerpetual::with_key(None, (api_key, sec_key));
+        let bp = get_client();
         let order_status = bp
             .query_order("ETHUSDT", None, Some("bzFftXVJkS3bPyF0MTZm6Q"))
             .await;
@@ -340,10 +340,7 @@ mod test {
     #[tokio::main]
     #[test]
     async fn test_get_ticker() {
-        dotenv().ok();
-        let api_key = env::var("API_KEY").unwrap();
-        let sec_key = env::var("SEC_KEY").unwrap();
-        let bp = BinancePerpetual::with_key(None, (api_key, sec_key));
+        let bp = get_client();
         let order_status = bp.get_ticker("ETHUSDT").await;
         match order_status {
             Ok(os) => {
@@ -358,10 +355,7 @@ mod test {
     #[tokio::main]
     #[test]
     async fn test_get_order_book() {
-        dotenv().ok();
-        let api_key = env::var("API_KEY").unwrap();
-        let sec_key = env::var("SEC_KEY").unwrap();
-        let bp = BinancePerpetual::with_key(None, (api_key, sec_key));
+        let bp = get_client();
         let order_status = bp.get_order_book("ETHUSDT", None).await;
         match order_status {
             Ok(os) => {

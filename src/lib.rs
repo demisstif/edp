@@ -7,6 +7,7 @@ pub mod error;
 pub mod model;
 pub mod binance;
 pub mod traits;
+pub(crate) mod indicator;
 
 
 #[cfg(test)]

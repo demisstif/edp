@@ -4,6 +4,7 @@ use reqwest::{Client, StatusCode};
 use ring::hmac;
 use std::collections::BTreeMap;
 
+#[derive(Clone)]
 pub struct RestClient {
     base_url: String,
     keys: Option<(String, String)>,

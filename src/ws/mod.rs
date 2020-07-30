@@ -1,1 +1,1 @@
-pub mod wclient;
+pub(crate) mod wclient;
