@@ -90,13 +90,15 @@ impl<'a> PublicAPI for BinanceSpot<'a> {
     ) -> Result<Vec<KData>> {
         let end_point = "/api/v3/klines";
         let mut url = format!("{}{}?symbol={}&interval={}", self.base_url, end_point, symbol, interval);
+        println!("{}", url);
         start_time.map_or_else(||{}, |start_ts| url.push_str(format!("startTime={}", start_ts).as_str()));
         if let Some(end_ts) = end_time {
-            url.push_str(format!("endTime={}", end_ts).as_str())
+            url.push_str(format!("&endTime={}", end_ts).as_str())
         }
         if let Some(lim) = limit {
-            url.push_str(format!("limit={}", lim).as_str());
+            url.push_str(format!("&limit={}", lim).as_str());
         }
+        println!("{}", url);
         let resp_text = reqwest::get(&url).await?.text().await?;
         let kline: Vec<RawKResp> = serde_json::from_str(&resp_text)?;
         Ok(kline.iter().map(|rkp| KData::from(*rkp)).collect())
@@ -271,6 +273,30 @@ mod string_or_float {
         match StringOrFloat::deserialize(deserializer)? {
             StringOrFloat::String(s) => s.parse().map_err(de::Error::custom),
             StringOrFloat::Float(i) => Ok(i),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+
+    #[tokio::test]
+    async fn test_kline() {
+        let binance = BinanceSpot {
+        base_url: "https://api.binance.com",
+        credential: None
+        };
+        let data = binance.get_klines("BTCUSDT", "1m", None, None, Some(10)).await;
+        match data {
+            Ok(d) => {
+
+                println!("{:?}", d)
+            },
+            Err(err) => {
+                println!("err {:?}", err)
+            }
         }
     }
 }
